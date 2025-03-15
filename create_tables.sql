@@ -1,3 +1,15 @@
+-- Staging Table
+CREATE TABLE IF NOT EXISTS staging_weather (
+    staging_id SERIAL PRIMARY KEY,
+    raw_json JSONB NOT NULL,
+    base_date DATE,
+    base_time NUMERIC,
+    nx INTEGER,
+    ny INTEGER,
+    load_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    processed BOOLEAN DEFAULT FALSE
+);
+
 
 -- create tables 
 CREATE TABLE IF NOT EXISTS dim_date (
