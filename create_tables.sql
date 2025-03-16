@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS staging_weather (
     staging_id SERIAL PRIMARY KEY,
     raw_json JSONB NOT NULL,
     base_date DATE,
-    base_time NUMERIC,
+    base_time VARCHAR(4),
     nx INTEGER,
     ny INTEGER,
     load_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
