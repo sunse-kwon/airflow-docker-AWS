@@ -22,11 +22,12 @@ default_args = {
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 1,
+    'timezone': 'KST',
     'retry_delay': timedelta(minutes=5)
 }
 
 # define Dag 
-with DAG('weather_etl_dag', default_args=default_args, start_date=datetime(2025,3,15), schedule_interval='@hourly', catchup=False) as dag:
+with DAG('weather_etl_dag', default_args=default_args, start_date=datetime(2025,3,15), schedule='10 * * * *', catchup=False) as dag:
     ## fetch data from api using python operator
     fetch_task = PythonOperator(
         task_id='fetch_weather_data',
