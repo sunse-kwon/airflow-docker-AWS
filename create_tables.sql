@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS staging_weather (
 
 -- create tables 
 CREATE TABLE IF NOT EXISTS dim_date (
-    date_id INTEGER PRIMARY KEY,
+    date_id SERIAL PRIMARY KEY,
     base_date DATE NOT NULL,
     year INTEGER,
     month SMALLINT,
@@ -23,13 +23,13 @@ CREATE TABLE IF NOT EXISTS dim_date (
 );
 
 CREATE TABLE IF NOT EXISTS dim_time (
-    time_id INTEGER PRIMARY KEY,
-    base_time NUMERIC NOT NULL,
+    time_id SERIAL PRIMARY KEY,
+    base_time VARCHAR(4) NOT NULL,
     hour SMALLINT
 );
 
 CREATE TABLE IF NOT EXISTS dim_location (
-    location_id INTEGER PRIMARY KEY,
+    location_id SERIAL PRIMARY KEY,
     nx INTEGER NOT NULL,
     ny INTEGER NOT NULL,
     admin_district_code TEXT,
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS dim_location (
 );
 
 CREATE TABLE IF NOT EXISTS dim_category (
-    category_id INTEGER PRIMARY KEY,
+    category_id SERIAL PRIMARY KEY,
     category_code TEXT NOT NULL,
     category_description TEXT,
     unit TEXT,
