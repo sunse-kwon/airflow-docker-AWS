@@ -32,7 +32,7 @@ with DAG('weather_etl_star_schema_dag', default_args=default_args, start_date=da
         external_dag_id='weather_etl_psa_dag',
         external_task_id='stage_weather_data',   
         # execution_delta=timedelta(minutes=5),  # Adjust based on schedules
-        timeout=5*60,
+        timeout=60*60,
         mode='reschedule'
     )
 
