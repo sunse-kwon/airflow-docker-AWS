@@ -62,3 +62,24 @@ CREATE TABLE IF NOT EXISTS fact_weather_measurement (
     FOREIGN KEY (location_id) REFERENCES dim_location(location_id),
     FOREIGN KEY (category_id) REFERENCES dim_category(category_id)
 );
+
+CREATE TABLE if NOT EXISTS feature_delays (
+    timestamp TIMESTAMP NOT NULL,        
+    day INTEGER,                           
+    hour INTEGER,                         
+    sin_hour DOUBLE PRECISION,                        
+    cos_hour DOUBLE PRECISION,                       
+    is_weekend INTEGER,                   
+    day_of_week_encoded SMALLINT,          
+    PTY DOUBLE PRECISION,                             -- rainfall type
+    REH DOUBLE PRECISION,                             -- Relative humidity
+    RN1 DOUBLE PRECISION,                             -- Rainfall amount
+    T1H DOUBLE PRECISION,                             -- Temperature
+    WSD DOUBLE PRECISION,                             -- Wind speed
+    PTY_lag1 DOUBLE PRECISION,                        -- PTY from 1 hour ago
+    PTY_lag2 DOUBLE PRECISION,                        -- PTY from 2 hours ago
+    delay_hours_lag1 DOUBLE PRECISION,                -- delay_hours from 1 hour ago
+    delay_hours_lag2 DOUBLE PRECISION,                -- delay_hours from 2 hours ago
+    delay_hours DOUBLE PRECISION,                     -- Target variable
+    PRIMARY KEY (timestamp)                    
+);
