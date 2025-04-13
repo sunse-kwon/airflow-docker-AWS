@@ -45,7 +45,7 @@ with DAG('one_time_feature_engineering', default_args=default_args, start_date=d
             dl.ny,
             dl.admin_district_code,
             dl.city,
-            dl.sub_address, 	
+            dl.sub_address	
             FROM fact_weather_measurement fwm 
             left join dim_date dd on fwm.date_id = dd.date_id
             left join dim_time dt on fwm.time_id = dt.time_id
