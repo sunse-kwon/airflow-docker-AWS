@@ -1,6 +1,5 @@
 import pandas as pd
 from airflow.hooks.postgres_hook import PostgresHook
-from sqlalchemy import create_engine
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -36,7 +35,7 @@ def load_features(ti):
 
         # Initialize PostgresHook to get connection details
         pg_hook = PostgresHook(postgres_conn_id='weather_connection')
-        engine = pg_hook.get_sqlalchemy_engine()
+        conn = pg_hook.get_conn()
         schema = pg_hook.get_connection('weather_connection').schema
 
 
@@ -44,14 +43,18 @@ def load_features(ti):
         logger.info(f"Inserting {row_count} rows into features table")
         transformed_features.to_sql(
             name='feature_delays',
-            con=engine,
+            con=conn,
             schema=schema if schema else None,
             if_exists='append',  # Use 'replace' to overwrite table
             index=False,
             method='multi'  # Use multi-row inserts
         )
+        conn.commit() # Explicit commit for psycopg2
         logger.info(f"Successfully inserted {row_count} rows")
         return {'rows_inserted': row_count}
     except Exception as e:
         logger.error(f'Error in load_features: {str(e)}')
         raise
+    finally:
+        if 'conn' in locals():
+            conn.close()
