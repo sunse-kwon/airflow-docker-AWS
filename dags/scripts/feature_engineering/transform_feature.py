@@ -66,7 +66,11 @@ def feature_engineering(data:pd.DataFrame) -> pd.DataFrame:
 
     data['is_weekend'] = data['day_of_week'].isin(['Saturday', 'Sunday']).astype(int)
     data['day_of_week_encoded'] = pd.Categorical(data['day_of_week']).codes
-    data['is_holiday'] = data['is_holiday'].astype(int)
+
+    # Convert is_holiday from TEXT 'TRUE'/'FALSE' to integers
+    if 'is_holiday' in data.columns:
+        data['is_holiday'] = data['is_holiday'].replace({'TRUE': 1, 'FALSE': 0}).astype(int)
+    # data['is_holiday'] = data['is_holiday'].astype(int)
     
     data['PTY_lag1'] = data['PTY'].shift(1)
     data['PTY_lag2'] = data['PTY'].shift(2)
