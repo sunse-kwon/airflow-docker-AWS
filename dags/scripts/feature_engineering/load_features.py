@@ -41,15 +41,15 @@ def load_features(ti):
         cursor = conn.cursor()
 
         records = [tuple(row) for row in transformed_features.itertuples(index=False)]
-        
+        logger.info(f'debugging 1st step, check records :{records}')
         insert_query = f"""
         INSERT INTO feature_delays (
             timestamp, PTY, REH, RN1, T1H, WSD, day, hour, sin_hour, cos_hour, is_weekend,
             day_of_week_encoded, PTY_lag1, PTY_lag2, delay_hours_lag1, delay_hours_lag2, delay_hours
         ) VALUES %s
-        ON CONFLICT (timestamp) DO NOTHING
+        
         """
-
+        # ON CONFLICT (timestamp) DO NOTHING
         # Insert data
         logger.info(f"Inserting {row_count} rows into features table")
         execute_values(cursor, insert_query, records)
