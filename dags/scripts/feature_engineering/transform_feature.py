@@ -56,7 +56,7 @@ def cleaning_data(data:pd.DataFrame, city_name:str) -> pd.DataFrame:
     data_resampled['PTY'] = data_resampled['PTY'].astype('category')
     data_resampled['PTY'].fillna(data_resampled['PTY'].mode()[0], inplace=True)
 
-    data_resampled.drop(['base_time','city','sub_address','UUU', 'VEC', 'VVV'], axis=1, inplace=True)
+    data_resampled.drop(['base_time','sub_address','UUU', 'VEC', 'VVV'], axis=1, inplace=True)
     return data_resampled
 
 
@@ -104,6 +104,38 @@ def transform_features(ti):
             logger.info(f'Step 3: feature engineering for {city}')
             feature_added = feature_engineering(cleaned_city)
        
+            transformed_features.append(feature_added)
+        except Exception as e:
+            logger.error(f'failed transformation for {city}, see : {str(e)}')
+    
+    logger.info(f'Step 4: feature engineering done for all cities')
+    ti.xcom_push(key='transformed_features', value=transformed_features)
+    return transformed_features
+
+
+def transform_features_hourly(ti):
+
+    data = ti.xcom_pull(task_ids='fetch_master_tables')
+    logger.info("Step 1: set datetime index for time series")
+    columns = [
+        'measurement_value', 'base_date', 'year', 'month', 'day', 
+        'day_of_week', 'is_holiday', 'base_time', 'hour', 'category_code', 
+        'category_description', 'unit', 'nx', 'ny', 'admin_district_code', 
+        'city', 'sub_address'
+        ]
+    data = pd.DataFrame(data, columns=columns)
+    data = get_timestamp_index(data)
+
+    transformed_features=[]
+    for city in data.city.unique():
+        try:
+            logger.info(f'Step 2: data cleaning for {city}')
+            cleaned_city = cleaning_data(data, city)
+
+            logger.info(f'Step 3: feature engineering for {city}')
+            feature_added = feature_engineering(cleaned_city)
+            # to select only current hour value. previous 2 hour data is not needed after create lag variable.
+            feature_added = feature_added.iloc[-1:,:]
             transformed_features.append(feature_added)
         except Exception as e:
             logger.error(f'failed transformation for {city}, see : {str(e)}')

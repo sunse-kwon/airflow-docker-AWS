@@ -64,7 +64,8 @@ CREATE TABLE IF NOT EXISTS fact_weather_measurement (
 );
 
 CREATE TABLE if NOT EXISTS feature_delays (
-    timestamp TIMESTAMP NOT NULL,        
+    timestamp TIMESTAMP NOT NULL, 
+    city TEXT NOT NULL,     
     day INTEGER,                           
     hour INTEGER,                         
     sin_hour DOUBLE PRECISION,                        
@@ -81,5 +82,5 @@ CREATE TABLE if NOT EXISTS feature_delays (
     delay_hours_lag1 DOUBLE PRECISION,                -- delay_hours from 1 hour ago
     delay_hours_lag2 DOUBLE PRECISION,                -- delay_hours from 2 hours ago
     delay_hours DOUBLE PRECISION,                     -- Target variable
-    PRIMARY KEY (timestamp)                    
+    PRIMARY KEY (timestamp, city)                    
 );

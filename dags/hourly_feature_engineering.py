@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 
 # add scrips directory to path
-from scripts.feature_engineering.transform_feature import transform_features
+from scripts.feature_engineering.transform_feature import transform_features_hourly
 from scripts.feature_engineering.load_features import load_features
 
 
@@ -71,7 +71,7 @@ with DAG('hourly_feature_engineering', default_args=default_args, start_date=dat
     # transform features
     transform_features_task = PythonOperator(
         task_id='transform_features',
-        python_callable=transform_features,
+        python_callable=transform_features_hourly,
     )
 
     # load into feature tables similar to feature store
