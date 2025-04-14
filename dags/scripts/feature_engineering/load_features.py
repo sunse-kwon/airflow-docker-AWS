@@ -2,9 +2,9 @@ import pandas as pd
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 import psycopg2
 from psycopg2.extras import execute_values
-from airflow import logging
+import logging
 
-
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
