@@ -82,6 +82,7 @@ def transform_features(ti):
 
     data = ti.xcom_pull(task_ids='fetch_master_tables')
     logger.info("Step 1: set datetime index for time series")
+    data = pd.DataFrame(data)
     data = get_timestamp_index(data)
 
     transformed_features=[]
