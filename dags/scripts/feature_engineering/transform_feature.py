@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 def get_timestamp_index(data:pd.DataFrame)-> pd.DataFrame:
     data['base_time'] = data['base_time'].astype(str).apply(lambda x: x.zfill(4))
-    data['timestamp'] = pd.to_datetime(data['base_date'] + ' ' + data['base_time'], format='%Y-%m-%d %H%M')
+    data['timestamp'] = pd.to_datetime(data['base_date'].astype(str) + ' ' + data['base_time'], format='%Y-%m-%d %H%M')
     data.set_index('timestamp', inplace=True)
     return data
 
