@@ -36,22 +36,24 @@ def load_features(ti):
 
         # Initialize PostgresHook to get connection details
         pg_hook = PostgresHook(postgres_conn_id='weather_connection')
-        conn = pg_hook.get_conn()
         conn_details = pg_hook.get_connection('weather_connection')
 
         # Create SQLAlchemy engine
         db_uri = f"postgresql+psycopg2://{conn_details.login}:{conn_details.password}@{conn_details.host}:{conn_details.port}/{conn_details.schema}"
         engine = create_engine(db_uri)
 
-        # Insert DataFrame using to_sql
-        logger.info(f"Inserting {row_count} rows into features table")
-        transformed_features.to_sql(
-            name='feature_delays',
-            con=engine,
-            if_exists='append',  # Use 'replace' to overwrite table
-            index=False,
-            method='multi'  # Use multi-row inserts
-        )
+        with engine.connect() as connection:
+            # Insert DataFrame using to_sql
+            logger.info(f"Inserting {row_count} rows into features table")
+            transformed_features.to_sql(
+                name='feature_delays',
+                con=connection,
+                schema=conn_details.schema if conn_details.schema else None,
+                if_exists='append',  # Use 'replace' to overwrite table
+                index=False,
+                method='multi'  # Use multi-row inserts
+            )
+            connection.commit() # ensure changes are committed
         logger.info(f"Successfully inserted {row_count} rows")
         return {'rows_inserted': row_count}
     except Exception as e:
