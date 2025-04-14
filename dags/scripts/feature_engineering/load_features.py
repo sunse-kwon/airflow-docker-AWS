@@ -1,8 +1,10 @@
 import pandas as pd
-from airflow.hooks.postgres_hook import PostgresHook
-import logging
+from airflow.providers.postgres.hooks.postgres import PostgresHook
+import psycopg2
+from psycopg2.extras import execute_values
+from airflow import logging
 
-logging.basicConfig(level=logging.INFO)
+
 logger = logging.getLogger(__name__)
 
 
@@ -36,25 +38,33 @@ def load_features(ti):
         # Initialize PostgresHook to get connection details
         pg_hook = PostgresHook(postgres_conn_id='weather_connection')
         conn = pg_hook.get_conn()
-        schema = pg_hook.get_connection('weather_connection').schema
+        cursor = conn.cursor()
 
+        records = [tuple(row) for row in transformed_features.itertuples(index=False)]
+        
+        insert_query = f"""
+        INSERT INTO feature_delays (
+            timestamp, PTY, REH, RN1, T1H, WSD, day, hour, sin_hour, cos_hour, is_weekend,
+            day_of_week_encoded, PTY_lag1, PTY_lag2, delay_hours_lag1, delay_hours_lag2, delay_hours
+        ) VALUES %s
+        ON CONFLICT (timestamp) DO NOTHING
+        """
 
-        # Insert DataFrame using to_sql
+        # Insert data
         logger.info(f"Inserting {row_count} rows into features table")
-        transformed_features.to_sql(
-            name='feature_delays',
-            con=conn,
-            schema=schema if schema else None,
-            if_exists='append',  # Use 'replace' to overwrite table
-            index=False,
-            method='multi'  # Use multi-row inserts
-        )
-        conn.commit() # Explicit commit for psycopg2
-        logger.info(f"Successfully inserted {row_count} rows")
-        return {'rows_inserted': row_count}
+        execute_values(cursor, insert_query, records)
+        conn.commit()
+
+        # Verify inserted rows
+        cursor.execute(f"SELECT COUNT(*) FROM feature_delays")
+        inserted_count = cursor.fetchone()[0]
+        logger.info(f"Successfully inserted or verified {inserted_count} rows")
+        return {'rows_inserted': inserted_count}
     except Exception as e:
         logger.error(f'Error in load_features: {str(e)}')
         raise
     finally:
+        if 'cursor' in locals():
+            cursor.close()
         if 'conn' in locals():
             conn.close()
