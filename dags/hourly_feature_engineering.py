@@ -62,8 +62,9 @@ with DAG('hourly_feature_engineering', default_args=default_args, start_date=dat
             left join dim_category dc on fwm.category_id  = dc.category_id
             left join dim_location dl on fwm.location_id = dl.location_id
             WHERE
-            TO_TIMESTAMP(dd.base_date || ' ' || dt.base_time, 'YYYY-MM-DD HH24MI') >= '{{ (execution_date.replace(minute=0, second=0) + macros.timedelta(hours=7)).strftime('%Y-%m-%d %H:%M:%S') }}'
-            AND TO_TIMESTAMP(dd.base_date || ' ' || dt.base_time, 'YYYY-MM-DD HH24MI') <= '{{ (execution_date.replace(minute=0, second=0) + macros.timedelta(hours=9)).strftime('%Y-%m-%d %H:%M:%S') }}'
+            TO_TIMESTAMP(dd.base_date || ' ' || dt.base_time, 'YYYY-MM-DD HH24MI') BETWEEN 
+            DATE_TRUNC('hour', ((CURRENT_TIMESTAMP AT TIME ZONE 'UTC') AT TIME ZONE 'Asia/Seoul') - INTERVAL '2 hours')
+            AND DATE_TRUNC('hour', ((CURRENT_TIMESTAMP AT TIME ZONE 'UTC') AT TIME ZONE 'Asia/Seoul'))
         """,
         do_xcom_push=True,
     )
