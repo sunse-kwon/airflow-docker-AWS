@@ -63,8 +63,8 @@ with DAG('hourly_feature_engineering', default_args=default_args, start_date=dat
             left join dim_location dl on fwm.location_id = dl.location_id
             WHERE
             TO_TIMESTAMP(dd.base_date || ' ' || dt.base_time, 'YYYY-MM-DD HH24MI') BETWEEN 
-            DATE_TRUNC('hour', ((CURRENT_TIMESTAMP AT TIME ZONE 'UTC') AT TIME ZONE 'Asia/Seoul') - INTERVAL '2 hours')
-            AND DATE_TRUNC('hour', ((CURRENT_TIMESTAMP AT TIME ZONE 'UTC') AT TIME ZONE 'Asia/Seoul'))
+            DATE_TRUNC('hour', CURRENT_TIMESTAMP + INTERVAL '9 hours' - INTERVAL '2 hours')
+            AND DATE_TRUNC('hour', CURRENT_TIMESTAMP + INTERVAL '9 hours')
         """,
         do_xcom_push=True,
     )
