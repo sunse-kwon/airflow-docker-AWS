@@ -24,5 +24,5 @@ def extract_data_with_columns(ti):
     # Push results to XCom
     ti.xcom_push(key='query_results', value={
         'columns': list(result.columns),
-        'data': result.values.tolist()
+        'data': result.to_dict()
     })
