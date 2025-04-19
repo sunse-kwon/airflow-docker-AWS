@@ -11,12 +11,13 @@ logger = logging.getLogger(__name__)
 
 
 def prepare_data(ti):
-    query_result = ti.xcom_pull(task_ids='data_extraction')
+    query_result = ti.xcom_pull(task_ids='data_extraction', key='query_results')
     if not query_result:
         logger.error(f'No data from data_extraction task')
         raise ValueError(f'Empty query result')
     
-    data = pd.DataFrame(query_result)
+    # Example: Convert to DataFrame
+    data = pd.DataFrame(query_result['data'], columns=query_result['columns'])
     
     # target log transformation
     data['delay_hours_log'] = np.log1p(data['delay_hours'])

@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 
 
 # add scrips directory to path
+from scripts.model_training.extract import extract_data_with_columns
 from scripts.model_training.preparation import prepare_data
 from scripts.model_training.training import train_model
 from scripts.model_training.validation import validate_model
@@ -26,17 +27,14 @@ default_args = {
 
 
 with DAG('model_training_seoul', default_args=default_args, start_date=datetime(2025,4,10), schedule_interval='@once', catchup=False) as dag:
-    # Extract data from feature table
-    data_extraction_task = SQLExecuteQueryOperator(
+
+    # Task to extract data with column names
+    data_extraction_task = PythonOperator(
         task_id='data_extraction',
-        conn_id='weather_connection',
-        sql="""
-            SELECT
-            *
-            FROM feature_delays
-        """,
-        do_xcom_push=True,
+        python_callable=extract_data_with_columns,
+        provide_context=True,
     )
+
     # Prepare data train, test split, x,y split, target log transformation for stabilize variance.
     data_preparation_task = PythonOperator(
         task_id='data_preperation',
