@@ -26,7 +26,7 @@ def prepare_data(ti):
     data_seoul = data[data['city']=='Seoul'].copy()
 
     # Set timestamp as index
-    data_seoul['timestamp'] = pd.to_datetime(data_seoul['timestamp'], format='%Y-%m-%d %H:%M:%S.%f')  # Ensure datetime format
+    data_seoul['timestamp'] = pd.to_datetime(data_seoul['timestamp'], format='%Y-%m-%d %H:%M:%S')  # Ensure datetime format
     data_seoul.set_index('timestamp', inplace=True)
 
     features=['PTY','REH','RN1','T1H','WSD','day','hour','sin_hour','cos_hour','is_weekend',
