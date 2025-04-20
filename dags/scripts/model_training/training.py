@@ -24,11 +24,17 @@ def train_model(ti):
     y_train = pd.DataFrame(ti.xcom_pull(task_ids='data_preparation', key='y_train'))
     y_test = pd.DataFrame(ti.xcom_pull(task_ids='data_preparation', key='y_test'))
 
-    # set datetime index
-    X_train.index = pd.to_datetime(X_train.index)
-    X_test.index = pd.to_datetime(X_test.index)
-    y_train.index = pd.to_datetime(y_train.index)
-    y_test.index = pd.to_datetime(y_test.index)
+    # Convert timestamp to datetime
+    X_train['timestamp'] = pd.to_datetime(X_train['timestamp'])
+    X_test['timestamp'] = pd.to_datetime(X_test['timestamp'])
+    y_train['timestamp'] = pd.to_datetime(y_train['timestamp'])
+    y_test['timestamp'] = pd.to_datetime(y_test['timestamp'])
+    
+    # Set timestamp as index
+    X_train.set_index('timestamp',inplace=True)
+    X_test.set_index('timestamp',inplace=True)
+    y_train.set_index('timestamp',inplace=True)
+    y_test.set_index('timestamp',inplace=True)
 
     # MLflow setup
     tracking_uri = os.getenv("MLFLOW_TRACKING_URI")

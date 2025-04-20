@@ -37,19 +37,22 @@ def prepare_data(ti):
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False, random_state=42)
 
-    # Optionally include timestamp in X_train/X_test for downstream use
-    X_train = X_train.copy()
-    X_test = X_test.copy()
-    X_train['timestamp'] = data_seoul['timestamp'].iloc[X_train.index].values
-    X_test['timestamp'] = data_seoul['timestamp'].iloc[X_test.index].values
+ 
+ # Reset index to include timestamp as a column
+    X_train = X_train.reset_index()  
+    X_test = X_test.reset_index()    
+    y_train = y_train.reset_index()  
+    y_test = y_test.reset_index()    
 
     # Convert timestamp to string for JSON serialization
     X_train['timestamp'] = X_train['timestamp'].astype(str)
     X_test['timestamp'] = X_test['timestamp'].astype(str)
-    
+    y_train['timestamp'] = y_train['timestamp'].astype(str)
+    y_test['timestamp'] = y_test['timestamp'].astype(str)
+
     # Push to XCom
-    ti.xcom_push(key="X_train", value=X_train.to_dict())
-    ti.xcom_push(key="X_test", value=X_test.to_dict())
-    ti.xcom_push(key="y_train", value=y_train.to_dict())
-    ti.xcom_push(key="y_test", value=y_test.to_dict())
+    ti.xcom_push(key="X_train", value=X_train.to_dict(orient='records'))
+    ti.xcom_push(key="X_test", value=X_test.to_dict(orient='records'))
+    ti.xcom_push(key="y_train", value=y_train.to_dict(orient='records'))
+    ti.xcom_push(key="y_test", value=y_test.to_dict(orient='records'))
     
