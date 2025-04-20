@@ -29,8 +29,8 @@ def prepare_data(ti):
     data_seoul['timestamp'] = pd.to_datetime(data_seoul['timestamp'], format='%Y-%m-%d %H:%M:%S')  # Ensure datetime format
     data_seoul.set_index('timestamp', inplace=True)
 
-    features=['PTY','REH','RN1','T1H','WSD','day','hour','sin_hour','cos_hour','is_weekend',
-       'day_of_week_encoded','PTY_lag1','PTY_lag2','delay_hours_lag1','delay_hours_lag2']
+    features=['pty','reh','rn1','t1h','wsd','day','hour','sin_hour','cos_hour','is_weekend',
+       'day_of_week_encoded','pty_lag1','pty_lag2','delay_hours_lag1','delay_hours_lag2']
     
     X  = data_seoul[features]
     y = data_seoul['delay_hours_log']
