@@ -35,10 +35,14 @@ def export_model(ti):
 
         # Validate aftifact exist
         artifact_info = client.list_artifacts(run_id, path='random_forest_model')
+        model_artifact_found=False
         for artifact in artifact_info:
-            if not any(artifact.path == "random_forest_model/MLmodel"):
-                logger.error(f'Model artifact not found for run_id {run_id}')
-                raise ValueError(f'Model artifact not found for run_id {run_id}')
+            if artifact.path == "random_forest_model/MLmodel":
+                model_artifact_found=True
+                break
+        if not model_artifact_found:    
+            logger.error(f'Model artifact not found for run_id {run_id}')
+            raise ValueError(f'Model artifact not found for run_id {run_id}')
         
         # Verify model format
         model = mlflow.sklearn.load_model(model_uri)
