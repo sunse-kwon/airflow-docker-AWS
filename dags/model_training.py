@@ -37,7 +37,7 @@ with DAG('model_training_seoul', default_args=default_args, start_date=datetime(
 
     # Prepare data train, test split, x,y split, target log transformation for stabilize variance.
     data_preparation_task = PythonOperator(
-        task_id='data_preperation',
+        task_id='data_preparation',
         python_callable=prepare_data,
     )
     # 

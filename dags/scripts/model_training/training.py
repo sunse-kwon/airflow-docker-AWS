@@ -18,11 +18,18 @@ logger = logging.getLogger(__name__)
 
 def train_model(ti):
     load_dotenv()
+    try:
+        x_train_data = ti.xcom_pull(task_ids='data_preparation', key='X_train')
+        x_test_data = ti.xcom_pull(task_ids='data_preparation', key='X_test')
+        y_train_data = ti.xcom_pull(task_ids='data_preparation', key='y_train')
+        y_test_data = ti.xcom_pull(task_ids='data_preparation', key='y_test')
+    except Exception as e:
+        raise ValueError(f'faild to fetch from preparation:  {e}')
 
-    X_train = pd.DataFrame(ti.xcom_pull(task_ids='data_preparation', key='X_train'))
-    X_test = pd.DataFrame(ti.xcom_pull(task_ids='data_preparation', key='X_test'))
-    y_train = pd.DataFrame(ti.xcom_pull(task_ids='data_preparation', key='y_train'))
-    y_test = pd.DataFrame(ti.xcom_pull(task_ids='data_preparation', key='y_test'))
+    X_train = pd.DataFrame(x_train_data)
+    X_test = pd.DataFrame(x_test_data)
+    y_train = pd.DataFrame(y_train_data)
+    y_test = pd.DataFrame(y_test_data)
 
     logger.info(f'debugging  X_test:  {X_test}')
 
