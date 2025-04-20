@@ -62,6 +62,7 @@ def push_to_model_registry(ti):
    
 
 def transition_to_production(ti):
+
     load_dotenv()
 
     # Pull model version from previous task
