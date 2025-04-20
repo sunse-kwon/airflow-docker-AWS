@@ -37,6 +37,16 @@ def prepare_data(ti):
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False, random_state=42)
 
+    # Optionally include timestamp in X_train/X_test for downstream use
+    X_train = X_train.copy()
+    X_test = X_test.copy()
+    X_train['timestamp'] = data_seoul['timestamp'].iloc[X_train.index].values
+    X_test['timestamp'] = data_seoul['timestamp'].iloc[X_test.index].values
+
+    # Convert timestamp to string for JSON serialization
+    X_train['timestamp'] = X_train['timestamp'].astype(str)
+    X_test['timestamp'] = X_test['timestamp'].astype(str)
+    
     # Push to XCom
     ti.xcom_push(key="X_train", value=X_train.to_dict())
     ti.xcom_push(key="X_test", value=X_test.to_dict())
