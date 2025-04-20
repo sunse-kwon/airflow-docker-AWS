@@ -1,5 +1,8 @@
 from airflow.hooks.base import BaseHook
+import logging
 
+
+logger = logging.getLogger(__name__)
 
 # Define a function to extract data with column names
 def extract_data_with_columns(ti):
@@ -10,7 +13,7 @@ def extract_data_with_columns(ti):
     # Run the query
     sql = "SELECT * FROM feature_delays"
     result = hook.get_pandas_df(sql)  # Use pandas for simplicity
-    
+    logger.info(f'result : {result}')
     # Alternatively, use raw cursor for more control
     # conn = hook.get_conn()
     # cursor = conn.cursor()
@@ -24,5 +27,5 @@ def extract_data_with_columns(ti):
     # Push results to XCom
     ti.xcom_push(key='query_results', value={
         'columns': list(result.columns),
-        'data': result.to_dict()
+        'data': result.to_dict(orient='records')
     })
