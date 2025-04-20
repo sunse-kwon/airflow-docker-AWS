@@ -57,7 +57,7 @@ with DAG('model_training_seoul', default_args=default_args, start_date=datetime(
     )
 
     push_to_model_registry_task = PythonOperator(
-        task_id='push_to_model_retistry',
+        task_id='push_to_model_registry',
         python_callable=push_to_model_registry,
     )
     # task dependencies
