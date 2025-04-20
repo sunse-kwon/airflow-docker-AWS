@@ -24,6 +24,8 @@ def train_model(ti):
     y_train = pd.DataFrame(ti.xcom_pull(task_ids='data_preparation', key='y_train'))
     y_test = pd.DataFrame(ti.xcom_pull(task_ids='data_preparation', key='y_test'))
 
+    logger.info(f'debugging  X_test:  {X_test}')
+
     # Convert timestamp to datetime
     X_train['timestamp'] = pd.to_datetime(X_train['timestamp'])
     X_test['timestamp'] = pd.to_datetime(X_test['timestamp'])
