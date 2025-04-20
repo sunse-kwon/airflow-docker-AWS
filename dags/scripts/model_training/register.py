@@ -12,9 +12,11 @@ def push_to_model_registry(ti):
 
     # Pull model URI
     model_uri = ti.xcom_pull(task_ids='export_model', key='model_uri')
-    if not model_uri:
-        logger.error(f'No model_uri from export_model task')
-        raise ValueError(f'No model_uri provided')
+    run_id = ti.xcom_pull(task_ids='model_training', key='run_id')
+
+    if not model_uri or not run_id:
+        logger.error(f'No model_uri from export_model task or run_id from export_model task')
+        raise ValueError(f'No model_uri or run_id provided')
     
     # Load MLflow tracking URI
     tracking_uri = os.getenv("MLFLOW_TRACKING_URI")
@@ -40,7 +42,6 @@ def push_to_model_registry(ti):
         logger.info(f"Model version {model_version.version} moved to Staging")
 
         # Log registration details
-        run_id = model_uri.split("/")[2]
         with mlflow.start_run(run_id=run_id):
             mlflow.log_param('registered_model_name', model_name)
             mlflow.log_param('model_version', model_version)
