@@ -32,19 +32,27 @@ def push_to_model_registry(ti):
         model_name = 'DeliveryDelayModelSeoul'
         model_version = mlflow.register_model(model_uri, model_name)
         logger.info(f"Registered model {model_name} version {model_version.version}")
-
-        # Set sgaging alias
+        
         client = mlflow.tracking.MlflowClient()
+
+        # Remove existing 'staging' alias
+        existing_versions = client.search_model_versions(f"name='{model_name}'")
+        for existing_version in existing_versions:
+            if "staging" in existing_version.aliases:
+                client.delete_registered_model_alias(name=model_name, alias="staging")
+                logger.info(f"Removed existing 'staging' alias from version {existing_version.version}")
+        
+        # Set sgaging alias
         client.set_registered_model_alias(
             name=model_name,
             alias='staging',
-            version=model_version
+            version=model_version.version
         )
         logger.info(f"Model version {model_version.version} assgined 'staging' alias " )
 
         client.set_model_version_tag(
             name=model_name,
-            version=model_version,
+            version=model_version.version,
             key='stage',
             value='staging'
         )
