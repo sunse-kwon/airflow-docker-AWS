@@ -95,12 +95,9 @@ def transition_to_production(ti):
 
     try:
         # Transition to Production
-        model_versions = client.search_model_versions(f"name='{model_name}'")
-        staging_version = None
-        for version in model_versions:
-            if version.aliases and 'staging' in version.aliases:
-                staging_version = version
-                break
+        staging_version = client.get_model_version_by_alias(name=model_name,alias='staging')
+        logger.info(f"Retrieved staging version: {staging_version.version} for model {model_name}")
+
 
         if not staging_version:
             logger.error("No versions found with 'staging' alias for model %s", model_name)
