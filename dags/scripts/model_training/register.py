@@ -33,20 +33,28 @@ def push_to_model_registry(ti):
         model_version = mlflow.register_model(model_uri, model_name)
         logger.info(f"Registered model {model_name} version {model_version.version}")
 
-        # Transition to Staging
+        # Set sgaging alias
         client = mlflow.tracking.MlflowClient()
-        client.transition_model_version_stage(
+        client.set_registered_model_alias(
             name=model_name,
-            version=model_version.version,
-            stage="Staging"
+            alias='staging',
+            version=model_version
         )
-        logger.info(f"Model version {model_version.version} moved to Staging")
+        logger.info(f"Model version {model_version.version} assgined 'staging' alias " )
+
+        client.set_model_version_tag(
+            name=model_name,
+            version=model_version,
+            key='stage',
+            value='staging'
+        )
+        logger.info(f"Model version {model_version.version} tagged with stage=staging")
 
         # Log registration details
         with mlflow.start_run(run_id=run_id):
             mlflow.log_param('registered_model_name', model_name)
             mlflow.log_param('model_version', model_version)
-            mlflow.log_param('model_stage', 'Staging')
+            mlflow.log_param('model_alias', 'staging')
 
         # Push version to Xcom
         ti.xcom_push(key="model_version", value=model_version.version)
@@ -79,27 +87,46 @@ def transition_to_production(ti):
 
     try:
         # Transition to Production
-        versions = client.get_latest_versions(model_name, stages=["Staging"])
-        if not versions:
-            logger.error("No versions found in Staging for model %s", model_name)
-            raise ValueError("No Staging versions available")
+        model_versions = client.search_model_versions(f"name='{model_name}'")
+        staging_version = None
+        for version in model_versions:
+            if version.aliases and 'staging' in version.aliases:
+                staging_version = version
+                break
+
+        if not staging_version:
+            logger.error("No versions found with 'staging' alias for model %s", model_name)
+            raise ValueError("No staging versions available")
         
-        model_version = versions[0].version
+        model_version = staging_version.version
         logger.info("Retrieved latest Staging version: %s for model %s", model_version, model_name)
     
-        client.transition_model_version_stage(
+        client.set_registered_model_alias(
+            name=model_name,
+            alias="prod",
+            version=model_version
+        )
+        logger.info(f"Model {model_name} version {model_version} assigned 'prod' alias")
+
+        client.set_model_version_tag(
             name=model_name,
             version=model_version,
-            stage="Production",
-            archive_existing_versions=True
+            key='stage',
+            value='production'
         )
-        logger.info(f"Model {model_name} version {model_version} moved to Production")
+        logger.info(f"Model version {model_version} tagged with stage=production")
 
+        client.delete_registered_model_alias(
+            name=model_name,
+            alias='staging'
+        )
+        logger.info(f"Removed 'staging' alias from model {model_name} version {model_version}")
+        
         # Log transition details to model version (no run_id needed)
         client.update_model_version(
             name=model_name,
             version=model_version,
-            description=f"Transitioned to Production on {datetime.now().isoformat()}"
+            description=f"Transitioned to Production with 'prod' alias on {datetime.now().isoformat()}"
         )
         logger.info(f"Updated model version description with transition details")
 
