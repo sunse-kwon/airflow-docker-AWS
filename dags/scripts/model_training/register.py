@@ -94,10 +94,29 @@ def transition_to_production(ti):
     client = mlflow.tracking.MlflowClient()
 
     try:
+        # old version of prod alias
+        old_prod_version = client.get_model_version_by_alias(name=model_name, alias="prod")
+        logger.info(f"Found existing 'prod' version: {old_prod_version.version}")
+        # Assign 'archived' alias to old 'prod' version
+        client.set_registered_model_alias(
+            name=model_name,
+            alias="archived",
+            version=old_prod_version.version
+        )
+        logger.info(f"Assigned 'archived' alias to old 'prod' version {old_prod_version.version}")
+        
+        # Update tag to indicate it's no longer active
+        client.set_model_version_tag(
+            name=model_name,
+            version=old_prod_version.version,
+            key="stage",
+            value="archived"
+        )
+        logger.info(f"Updated old 'prod' version {old_prod_version.version} tag to stage=archived")
+
         # Transition to Production
         staging_version = client.get_model_version_by_alias(name=model_name,alias='staging')
         logger.info(f"Retrieved staging version: {staging_version.version} for model {model_name}")
-
 
         if not staging_version:
             logger.error("No versions found with 'staging' alias for model %s", model_name)
