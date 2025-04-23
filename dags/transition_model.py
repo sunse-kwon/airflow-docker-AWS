@@ -44,7 +44,7 @@ with DAG('transition_model_to_production', default_args=default_args, start_date
     bash_command=(
         "mlflow sagemaker push-model "
         "-n DeliveryDelayModelSeoul "
-        "-m models:/DeliveryDelayModelSeoul/prod "
+        "-m s3://artifact-store-sun/mlruns/3/d639258af272416184e0e574e3189d7b/artifacts/random_forest_model "
         "-e arn:aws:iam::785685275217:role/service-role/SageMaker-mlops "
         "-b package-model-for-sagemaker-deploy "
         "--region-name eu-central-1"
