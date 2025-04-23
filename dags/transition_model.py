@@ -46,7 +46,7 @@ with DAG('transition_model_to_production', default_args=default_args, start_date
                 "Image":"763104351884.dkr.ecr.eu-central-1.amazonaws.com/mlflow-pyfunc:2.13.2",
                 "ModelDataUrl": "s3://package-model-for-sagemaker-deploy/models/model.tar.gz"
             },
-            "ExecutionRoleArn": "arn:aws:iam::785685275217:role/service-role/AmazonSageMaker-ExecutionRole-20230920T124149"
+            "ExecutionRoleArn": "arn:aws:iam::785685275217:role/service-role/SageMaker-mlops"
         }
     )
 
