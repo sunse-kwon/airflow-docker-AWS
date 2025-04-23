@@ -1,5 +1,6 @@
 from airflow.models import DAG
 from airflow.operators.python import PythonOperator
+from airflow.providers.amazon.aws.operators.sagemaker import SageMakerModelOperator, SageMakerEndpointConfigOperator,SageMakerEndpointOperator
 from datetime import datetime, timedelta
 
 
@@ -36,5 +37,18 @@ with DAG('transition_model_to_production', default_args=default_args, start_date
             "s3_key":"models/model.tar.gz"
         }
     )
+    sagemaker_model_task = SageMakerModelOperator(
+        task_id="create_model",
+        aws_conn_id='aws_default',
+        config={
+            "ModelName": "mlflow-model",
+            "PrimaryContainer": {
+                "Image":"763104351884.dkr.ecr.eu-central-1.amazonaws.com/mlflow-pyfunc:2.13.2",
+                "ModelDataUrl": "s3://package-model-for-sagemaker-deploy/models/model.tar.gz"
+            },
+            "ExecutionRoleArn": "arn:aws:iam::785685275217:user/airflow-mlflow-artifact-store"
+        }
+    )
+
     # Dependencies
-    transition_task >> package_and_upload_model_task
+    transition_task >> package_and_upload_model_task >> sagemaker_model_task
