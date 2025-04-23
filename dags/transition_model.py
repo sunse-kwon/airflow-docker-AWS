@@ -39,28 +39,30 @@ with DAG('transition_model_to_production', default_args=default_args, start_date
         }
     )
 
-    build_image_task = BashOperator(
-    task_id="build_and_push_image",
+    push_model_task = BashOperator(
+    task_id="push_model",
     bash_command=(
-        "mlflow sagemaker build-and-push-container "
+        "mlflow sagemaker push-model "
+        "-n DeliveryDelayModelSeoul "
         "-m models:/DeliveryDelayModelSeoul/prod "
-        "--repository-uri 785685275217.dkr.ecr.eu-central-1.amazonaws.com/mlflow-custom-model "
-        "--region eu-central-1"
+        "-e arn:aws:iam::785685275217:role/service-role/SageMaker-mlops "
+        "-b package-model-for-sagemaker-deploy "
+        "--region-name eu-central-1"
         )
     )
     
-    sagemaker_model_task = SageMakerModelOperator(
-        task_id="create_model",
-        aws_conn_id='aws_default',
-        config={
-            "ModelName": "mlflow-model",
-            "PrimaryContainer": {
-                "Image":"763104351884.dkr.ecr.eu-central-1.amazonaws.com/mlflow-pyfunc:2.13.2",
-                "ModelDataUrl": "s3://package-model-for-sagemaker-deploy/models/model.tar.gz"
-            },
-            "ExecutionRoleArn": "arn:aws:iam::785685275217:role/service-role/SageMaker-mlops"
-        }
-    )
+    # sagemaker_model_task = SageMakerModelOperator(
+    #     task_id="create_model",
+    #     aws_conn_id='aws_default',
+    #     config={
+    #         "ModelName": "mlflow-model",
+    #         "PrimaryContainer": {
+    #             "Image":"763104351884.dkr.ecr.eu-central-1.amazonaws.com/mlflow-pyfunc:2.13.2",
+    #             "ModelDataUrl": "s3://package-model-for-sagemaker-deploy/models/model.tar.gz"
+    #         },
+    #         "ExecutionRoleArn": "arn:aws:iam::785685275217:role/service-role/SageMaker-mlops"
+    #     }
+    # )
 
     # Dependencies
-    transition_task >> package_and_upload_model_task >> build_image_task >> sagemaker_model_task
+    transition_task >> package_and_upload_model_task >> build_image_task 
