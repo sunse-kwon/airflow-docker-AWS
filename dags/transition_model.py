@@ -29,15 +29,15 @@ with DAG('transition_model_to_production', default_args=default_args, start_date
         python_callable=transition_to_production
     )
 
-    package_and_upload_model_task = PythonOperator(
-        task_id="package_and_upload_model",
-        python_callable=package_and_upload_model,
-        op_kwargs={
-            "model_name":"DeliveryDelayModelSeoul",
-            "bucket_name":"package-model-for-sagemaker-deploy",
-            "s3_key":"models/model.tar.gz"
-        }
-    )
+    # package_and_upload_model_task = PythonOperator(
+    #     task_id="package_and_upload_model",
+    #     python_callable=package_and_upload_model,
+    #     op_kwargs={
+    #         "model_name":"DeliveryDelayModelSeoul",
+    #         "bucket_name":"package-model-for-sagemaker-deploy",
+    #         "s3_key":"models/model.tar.gz"
+    #     }
+    # )
 
     push_model_task = BashOperator(
     task_id="push_model",
@@ -65,4 +65,4 @@ with DAG('transition_model_to_production', default_args=default_args, start_date
     # )
 
     # Dependencies
-    transition_task >> package_and_upload_model_task >> build_image_task 
+    transition_task >>  push_model_task 
