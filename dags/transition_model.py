@@ -47,6 +47,7 @@ with DAG('transition_model_to_production', default_args=default_args, start_date
         "-m s3://artifact-store-sun/mlruns/3/d639258af272416184e0e574e3189d7b/artifacts/random_forest_model "
         "-e arn:aws:iam::785685275217:role/service-role/SageMaker-mlops "
         "-b package-model-for-sagemaker-deploy "
+        "-i 785685275217.dkr.ecr.eu-central-1.amazonaws.com/mlflow-custom-model:latest "
         "--region-name eu-central-1"
         )
     )
