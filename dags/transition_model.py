@@ -1,4 +1,5 @@
 from airflow.models import DAG
+from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.operators.sagemaker import SageMakerModelOperator, SageMakerEndpointConfigOperator,SageMakerEndpointOperator
 from datetime import datetime, timedelta
@@ -37,6 +38,17 @@ with DAG('transition_model_to_production', default_args=default_args, start_date
             "s3_key":"models/model.tar.gz"
         }
     )
+
+    build_image_task = BashOperator(
+    task_id="build_and_push_image",
+    bash_command=(
+        "mlflow sagemaker build-and-push-container "
+        "-m models:/DeliveryDelayModelSeoul/prod "
+        "--repository-uri 785685275217.dkr.ecr.eu-central-1.amazonaws.com/mlflow-custom-model "
+        "--region eu-central-1"
+        )
+    )
+    
     sagemaker_model_task = SageMakerModelOperator(
         task_id="create_model",
         aws_conn_id='aws_default',
@@ -51,4 +63,4 @@ with DAG('transition_model_to_production', default_args=default_args, start_date
     )
 
     # Dependencies
-    transition_task >> package_and_upload_model_task >> sagemaker_model_task
+    transition_task >> package_and_upload_model_task >> build_image_task >> sagemaker_model_task
