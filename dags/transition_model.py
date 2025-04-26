@@ -11,10 +11,10 @@ from scripts.model_deploy.package import get_model_details
 
     
 PROJECT_NAME = 'DeliveryDelay'
-TIMESTAMP = '{{ ts_nodash }}'
+# TIMESTAMP = '{{ ts_nodash }}'
 MODEL_NAME = 'DeliveryDelayModelSeoul'
 ENDPOINT_NAME = f'{PROJECT_NAME}-endpoint'
-ENDPOINT_CONFIG_JOB_NAME = f'{PROJECT_NAME}-endpoint-config-{TIMESTAMP}'
+ENDPOINT_CONFIG_JOB_NAME = f'{PROJECT_NAME}-endpoint-config'
 
 ENDPOINT_CONFIG_CONFIG = {
         'EndpointConfigName': ENDPOINT_CONFIG_JOB_NAME,
@@ -58,18 +58,6 @@ with DAG('transition_model_to_production', default_args=default_args, start_date
         provide_context=True,
     )
 
-    # push_model_task = BashOperator(
-    # task_id="push_model",
-    # bash_command=(
-    #     "mlflow sagemaker push-model "
-    #     "-n DeliveryDelayModelSeoul "
-    #     "-m s3://artifact-store-sun/mlruns/3/d639258af272416184e0e574e3189d7b/artifacts/random_forest_model "
-    #     "-e arn:aws:iam::785685275217:role/service-role/SageMaker-mlops "
-    #     "-b package-model-for-sagemaker-deploy "
-    #     "-i 785685275217.dkr.ecr.eu-central-1.amazonaws.com/mlflow:2.21.3 "
-    #     "--region-name eu-central-1"
-    #     )
-    # )
 
     # create endpoint config
     configure_endpoint_task = SageMakerEndpointConfigOperator(
@@ -91,6 +79,20 @@ with DAG('transition_model_to_production', default_args=default_args, start_date
     # Dependencies
     transition_task >> get_model_task  >> configure_endpoint_task >> deploy_endpoint_task
 
+
+
+    # push_model_task = BashOperator(
+    # task_id="push_model",
+    # bash_command=(
+    #     "mlflow sagemaker push-model "
+    #     "-n DeliveryDelayModelSeoul "
+    #     "-m s3://artifact-store-sun/mlruns/3/d639258af272416184e0e574e3189d7b/artifacts/random_forest_model "
+    #     "-e arn:aws:iam::785685275217:role/service-role/SageMaker-mlops "
+    #     "-b package-model-for-sagemaker-deploy "
+    #     "-i 785685275217.dkr.ecr.eu-central-1.amazonaws.com/mlflow:2.21.3 "
+    #     "--region-name eu-central-1"
+    #     )
+    # )
 
 
     # package_and_upload_model_task = PythonOperator(
