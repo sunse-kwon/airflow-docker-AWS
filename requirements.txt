@@ -29,7 +29,7 @@ babel==2.17.0
 beautifulsoup4==4.13.4
 blinker==1.9.0
 boto3==1.37.30
-botocore==1.37.30
+botocore==1.37.38
 cachelib==0.13.0
 cachetools==5.5.2
 certifi==2025.1.31
@@ -55,6 +55,7 @@ Deprecated==1.2.18
 dill==0.3.9
 dnspython==2.7.0
 docker==7.1.0
+docutils==0.19
 email_validator==2.2.0
 executing==2.2.0
 fastapi==0.115.12
@@ -180,8 +181,9 @@ rfc3339-validator==0.1.4
 rich==13.9.4
 rich-argparse==1.7.0
 rpds-py==0.23.1
-rsa==4.9
-s3transfer==0.11.4
+rsa==4.7.2
+s3transfer==0.11.5
+sagemaker-mlflow==0.1.0
 sagemaker_studio==1.0.13
 scikit-learn==1.6.1
 scipy==1.15.2
