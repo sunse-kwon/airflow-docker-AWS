@@ -47,8 +47,6 @@ with DAG('transition_model_to_production', default_args=default_args, start_date
     task_id='create_endpoint_config',
     config=get_endpoint_config,
     aws_conn_id='aws_default',
-    wait_for_completion=True,
-    wait_for_completion_timeout=1800,
     )
 
     # Task: Deploy SageMaker endpoint
@@ -57,7 +55,6 @@ with DAG('transition_model_to_production', default_args=default_args, start_date
         config=get_endpoint,
         aws_conn_id='aws_default',
         wait_for_completion=True,
-        wait_for_completion_timeout=1800,
     )
 
     # Dependencies
