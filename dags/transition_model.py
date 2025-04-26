@@ -8,9 +8,30 @@ from datetime import datetime, timedelta
 # load modules
 from scripts.model_training.register import transition_to_production
 from scripts.model_deploy.package import get_model_details
-from scripts.model_deploy.deploy import get_endpoint_config, get_endpoint
 
     
+PROJECT_NAME = 'DeliveryDelay'
+TIMESTAMP = '{{ ts_nodash }}'
+MODEL_NAME = 'DeliveryDelayModelSeoul'
+ENDPOINT_NAME = f'{PROJECT_NAME}-endpoint'
+ENDPOINT_CONFIG_JOB_NAME = f'{PROJECT_NAME}-endpoint-config-{TIMESTAMP}'
+
+ENDPOINT_CONFIG_CONFIG = {
+        'EndpointConfigName': ENDPOINT_CONFIG_JOB_NAME,
+        'ProductionVariants': [{
+            'InstanceType': 'ml.t2.medium',  # Adjust based on needs
+            'InitialInstanceCount': 1,
+            'ModelName': MODEL_NAME,
+            'VariantName': 'AllTraffic',
+        }],
+    }
+
+DEPLOY_ENDPOINT_CONFIG = {
+    'EndpointName': ENDPOINT_NAME,
+    'EndpointConfigName': ENDPOINT_CONFIG_JOB_NAME,
+}
+
+
 # define default arguments
 default_args = {
     'owner': 'airflow',
@@ -22,6 +43,7 @@ default_args = {
     'timezone': 'KST',
     'retry_delay': timedelta(minutes=5)
 }
+
 
 with DAG('transition_model_to_production', default_args=default_args, start_date=datetime(2025,4,10), schedule_interval='@once', catchup=False) as dag:
     
@@ -50,22 +72,24 @@ with DAG('transition_model_to_production', default_args=default_args, start_date
     # )
 
     # create endpoint config
-    create_endpoint_config_task = SageMakerEndpointConfigOperator(
-    task_id='create_endpoint_config',
-    config=get_endpoint_config,
-    aws_conn_id='aws_default',
+    configure_endpoint_task = SageMakerEndpointConfigOperator(
+        task_id='configure_endpoint',
+        config=ENDPOINT_CONFIG_CONFIG,
+        aws_conn_id='aws_default',
+        do_xcom_push=False,
     )
 
     # Task: Deploy SageMaker endpoint
     deploy_endpoint_task = SageMakerEndpointOperator(
-        task_id='deploy_sagemaker_endpoint',
-        config=get_endpoint,
+        task_id='deploy_endpoint',
+        config=DEPLOY_ENDPOINT_CONFIG,
         aws_conn_id='aws_default',
         wait_for_completion=True,
+        do_xcom_push=False,
     )
 
     # Dependencies
-    transition_task >> get_model_task  >> create_endpoint_config_task >> deploy_endpoint_task
+    transition_task >> get_model_task  >> configure_endpoint_task >> deploy_endpoint_task
 
 
 
