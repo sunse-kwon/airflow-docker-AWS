@@ -43,7 +43,7 @@ def package_and_upload_model(model_name, bucket_name, s3_key):
 
 
 # Define callback functions
-def get_model_details(**context):
+def get_model_details(ti):
     """Retrieve MLflow model version and artifact path for the 'prod' alias."""
 
     load_dotenv()
@@ -59,35 +59,35 @@ def get_model_details(**context):
 
     model_version = client.get_model_version_by_alias('DeliveryDelayModelSeoul', 'prod')
     
-    context['ti'].xcom_push(key='model_version', value=model_version.version)
-    context['ti'].xcom_push(key='run_id', value=model_version.run_id)
-    context['ti'].xcom_push(key='artifact_uri', value=model_version.source)
+    ti.xcom_push(key='model_version', value=model_version.version)
+    ti.xcom_push(key='run_id', value=model_version.run_id)
+    ti.xcom_push(key='artifact_uri', value=model_version.source)
 
 
-def push_mlflow_model(**context):
-    """Push MLflow model to SageMaker using push_model_to_sagemaker."""
-    artifact_uri = context['ti'].xcom_pull(task_ids='get_model_details', key='artifact_uri')
-    model_version = context['ti'].xcom_pull(task_ids='get_model_details', key='model_version')
+# def push_mlflow_model(ti):
+#     """Push MLflow model to SageMaker using push_model_to_sagemaker."""
+#     artifact_uri = ti.xcom_pull(task_ids='get_model_details', key='artifact_uri')
+#     model_version = ti.xcom_pull(task_ids='get_model_details', key='model_version')
     
-    # Configure parameters
-    model_name = 'DeliveryDelayModelSeoul'
-    role_arn = 'arn:aws:iam::785685275217:role/service-role/SageMaker-mlops'
-    bucket_name = 'package-model-for-sagemaker-deploy'
-    image_uri = '785685275217.dkr.ecr.eu-central-1.amazonaws.com/mlflow:2.21.3'
-    region = 'eu-central-1'
+#     # Configure parameters
+#     model_name = 'DeliveryDelayModelSeoul'
+#     role_arn = 'arn:aws:iam::785685275217:role/service-role/SageMaker-mlops'
+#     bucket_name = 'package-model-for-sagemaker-deploy'
+#     image_uri = '785685275217.dkr.ecr.eu-central-1.amazonaws.com/mlflow:2.21.3'
+#     region = 'eu-central-1'
     
-    try:
-        mlflow.sagemaker.push_model_to_sagemaker(
-            model_name=model_name,
-            model_uri=artifact_uri,  # Or use 'models:/MyModel/Prod'
-            execution_role_arn=role_arn,
-            bucket=bucket_name,
-            image_url=image_uri,
-            region_name=region,
-            flavor='sklearn',  # Adjust based on your model (e.g., 'python_function', 'xgboost')
-        )
-        print(f"Successfully pushed model version {model_version} to SageMaker as {model_name}")
-    except Exception as e:
-        print(f"Error pushing model: {str(e)}")
-        raise
+#     try:
+#         mlflow.sagemaker.push_model_to_sagemaker(
+#             model_name=model_name,
+#             model_uri=artifact_uri,  # Or use 'models:/MyModel/Prod'
+#             execution_role_arn=role_arn,
+#             bucket=bucket_name,
+#             image_url=image_uri,
+#             region_name=region,
+#             flavor='sklearn',  # Adjust based on your model (e.g., 'python_function', 'xgboost')
+#         )
+#         print(f"Successfully pushed model version {model_version} to SageMaker as {model_name}")
+#     except Exception as e:
+#         print(f"Error pushing model: {str(e)}")
+#         raise
 
