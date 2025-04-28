@@ -7,29 +7,8 @@ from datetime import datetime, timedelta
 
 # load modules
 from scripts.model_training.register import transition_to_production
-from scripts.model_deploy.package import get_model_details
+from scripts.model_deploy.package import trigger_github_action
 
-    
-PROJECT_NAME = 'DeliveryDelay'
-# TIMESTAMP = '{{ ts_nodash }}'
-MODEL_NAME = 'DeliveryDelayModelSeoul'
-ENDPOINT_NAME = f'{PROJECT_NAME}-endpoint'
-ENDPOINT_CONFIG_JOB_NAME = f'{PROJECT_NAME}-endpoint-config'
-
-ENDPOINT_CONFIG_CONFIG = {
-        'EndpointConfigName': ENDPOINT_CONFIG_JOB_NAME,
-        'ProductionVariants': [{
-            'InstanceType': 'ml.t2.medium',  # Adjust based on needs
-            'InitialInstanceCount': 1,
-            'ModelName': MODEL_NAME,
-            'VariantName': 'AllTraffic',
-        }],
-    }
-
-DEPLOY_ENDPOINT_CONFIG = {
-    'EndpointName': ENDPOINT_NAME,
-    'EndpointConfigName': ENDPOINT_CONFIG_JOB_NAME,
-}
 
 
 # define default arguments
@@ -52,81 +31,9 @@ with DAG('transition_model_to_production', default_args=default_args, start_date
         python_callable=transition_to_production
     )
 
-    get_model_task = PythonOperator(
-        task_id='get_model_details',
-        python_callable=get_model_details,
-        provide_context=True,
+    trigger_github_action_task = PythonOperator(
+        task_id='trigger_github_action',
+        python_callable=trigger_github_action,
     )
-
-
-    # create endpoint config
-    configure_endpoint_task = SageMakerEndpointConfigOperator(
-        task_id='configure_endpoint',
-        config=ENDPOINT_CONFIG_CONFIG,
-        aws_conn_id='aws_default',
-        do_xcom_push=False,
-    )
-
-    # Task: Deploy SageMaker endpoint
-    deploy_endpoint_task = SageMakerEndpointOperator(
-        task_id='deploy_endpoint',
-        config=DEPLOY_ENDPOINT_CONFIG,
-        aws_conn_id='aws_default',
-        wait_for_completion=True,
-        do_xcom_push=False,
-    )
-
     # Dependencies
-    transition_task >> get_model_task  >> configure_endpoint_task >> deploy_endpoint_task
-
-
-
-    # push_model_task = BashOperator(
-    # task_id="push_model",
-    # bash_command=(
-    #     "mlflow sagemaker push-model "
-    #     "-n DeliveryDelayModelSeoul "
-    #     "-m s3://artifact-store-sun/mlruns/3/d639258af272416184e0e574e3189d7b/artifacts/random_forest_model "
-    #     "-e arn:aws:iam::785685275217:role/service-role/SageMaker-mlops "
-    #     "-b package-model-for-sagemaker-deploy "
-    #     "-i 785685275217.dkr.ecr.eu-central-1.amazonaws.com/mlflow:2.21.3 "
-    #     "--region-name eu-central-1"
-    #     )
-    # )
-
-
-    # package_and_upload_model_task = PythonOperator(
-    #     task_id="package_and_upload_model",
-    #     python_callable=package_and_upload_model,
-    #     op_kwargs={
-    #         "model_name":"DeliveryDelayModelSeoul",
-    #         "bucket_name":"package-model-for-sagemaker-deploy",
-    #         "s3_key":"models/model.tar.gz"
-    #     }
-    # )
-
-    # push_model_task = BashOperator(
-    # task_id="push_model",
-    # bash_command=(
-    #     "mlflow sagemaker push-model "
-    #     "-n DeliveryDelayModelSeoul "
-    #     "-m s3://artifact-store-sun/mlruns/3/d639258af272416184e0e574e3189d7b/artifacts/random_forest_model "
-    #     "-e arn:aws:iam::785685275217:role/service-role/SageMaker-mlops "
-    #     "-b package-model-for-sagemaker-deploy "
-    #     "-i 785685275217.dkr.ecr.eu-central-1.amazonaws.com/mlflow:2.21.3 "
-    #     "--region-name eu-central-1"
-    #     )
-    # )
-    
-    # sagemaker_model_task = SageMakerModelOperator(
-    #     task_id="create_model",
-    #     aws_conn_id='aws_default',
-    #     config={
-    #         "ModelName": "mlflow-model",
-    #         "PrimaryContainer": {
-    #             "Image":"763104351884.dkr.ecr.eu-central-1.amazonaws.com/mlflow-pyfunc:2.13.2",
-    #             "ModelDataUrl": "s3://package-model-for-sagemaker-deploy/models/model.tar.gz"
-    #         },
-    #         "ExecutionRoleArn": "arn:aws:iam::785685275217:role/service-role/SageMaker-mlops"
-    #     }
-    # )
+    transition_task >> trigger_github_action_task 

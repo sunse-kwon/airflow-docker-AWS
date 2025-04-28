@@ -154,9 +154,21 @@ def transition_to_production(ti):
         )
         logger.info(f"Updated model version description with transition details")
 
+        # Retrieve MODEL_URI (S3 URI) from MLflow
+        run_id = staging_version.run_id
+        run = client.get_run(run_id)
+        artifact_uri = run.info.artifact_uri
+        model_uri = f"{artifact_uri}/random_forest_model"
+        logger.info(f"Retrieved MODEL_URI: {model_uri} for model version {model_version}")
 
-        # Push version to XCom for deployment
+        # Validate MODEL_URI
+        if not model_uri.startswith('s3://'):
+            logger.error(f"Invalid MODEL_URI: {model_uri}. Expected an S3 URI.")
+            raise ValueError(f"Invalid MODEL_URI: {model_uri}")
+        
+        # Push version and MODEL_URI to XCom for deployment
         ti.xcom_push(key="production_model_version", value=model_version)
+        ti.xcom_push(key="model_uri", value=model_uri)
 
     except MlflowException as e:
         logger.error(f"MLflow error during transition to Production: {e}")
