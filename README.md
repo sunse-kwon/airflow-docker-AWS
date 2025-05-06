@@ -16,6 +16,10 @@ This Project showcase Automation of ML workflow from scratch.
 - Docker: Containerization
 - GitHub Actions: CI/CD pipeline
 
+## Tutorial
+Watch the step-by-step tutorial on YouTube: [MLOps Level 1 - Continuous Training Pipeline Tutorial](https://www.youtube.com/@codingwithsun)
+
+
 ## Prerequisites
 - Python 3.12+
 - Docker and Docker Compose
@@ -33,7 +37,6 @@ This Project showcase Automation of ML workflow from scratch.
 ├── images/            # Documentation images
 └── requirements.txt   # Python dependencies
 ```
-
 
 ## Pipeline Components
 
